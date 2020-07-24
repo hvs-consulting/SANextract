@@ -83,4 +83,6 @@ Make sure you have go installed.
 - Option A: Clone the repo and run `go build`. 
 - Option B: `go get github.com/hvs-consulting/SANextract`
 
-There are no third-party dependencies. Since it SANextract is written in pure go, you may cross-compile it for all architectures supported by go.
+There are no third-party dependencies. 
+Since SANextract is written in pure go, you may cross-compile it for all architectures supported by go. 
+Tested with Go 1.14.

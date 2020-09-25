@@ -30,6 +30,7 @@ func init() {
 }
 
 func main() {
+	printDisclaimer()
 	// Start Workers
 	scanQueue := make(chan func() result, 20)
 	var wg sync.WaitGroup
@@ -60,6 +61,7 @@ func main() {
 func printDisclaimer() {
 	fmt.Fprintln(os.Stderr, "SANextract - fetch TLS certificates from endpoints and extract Subject Alternative Names")
 	fmt.Fprintln(os.Stderr, "By Michael Eder, HvS-Consulting AG")
+	fmt.Fprintln(os.Stderr, "https://www.hvs-consulting.de/  https://twitter.com/michael_eder_")
 	fmt.Fprintln(os.Stderr, "")
 }
 

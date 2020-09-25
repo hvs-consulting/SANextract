@@ -73,8 +73,12 @@ func getScanFunc(target string) func() result {
 			return result{}
 		}
 		defer conn.Close()
+		// For SNI, we need the host name. The input has already been sanitized, so we assume something like <host>:<port> here.
+		// This is a best effort approach
+		host := strings.Split(target, ":")[0]
+
 		// Do the TLS handshake
-		tlsConn := tls.Client(conn, &tls.Config{InsecureSkipVerify: true}) // Skip the certificate verification as this is not of interest
+		tlsConn := tls.Client(conn, &tls.Config{ServerName: host, InsecureSkipVerify: true}) // Skip the certificate verification as this is not of interest
 		err = tlsConn.Handshake()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, fmt.Sprintf("%s: Failed to connect: %s", target, err.Error()))
@@ -85,9 +89,8 @@ func getScanFunc(target string) func() result {
 			Target: target,
 			SANs:   []string{},
 		}
-		for _, certificate := range cs.PeerCertificates {
-			r.SANs = certificate.DNSNames
-		}
+
+		r.SANs = cs.PeerCertificates[0].DNSNames
 		return r
 	}
 }

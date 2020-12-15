@@ -33,29 +33,46 @@ func main() {
 	printDisclaimer()
 	// Start Workers
 	scanQueue := make(chan func() result, 20)
+	resultsQueue := make(chan result, 20)
 	var wg sync.WaitGroup
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
-		go func(queue <-chan func() result) {
+		go func(queue <-chan func() result, results chan<- result) {
 			for queuedTask := range queue {
-				result := queuedTask()
-				processOutput(jsonOutput, result)
+				results <- queuedTask()
 			}
 			wg.Done()
-		}(scanQueue)
+		}(scanQueue, resultsQueue)
 	}
 
-	// Read from stdin
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		target := scanner.Text()
-		// Filter input
-		sanitized := sanitizeInput(target)
-		// This queues the scan
-		scanQueue <- getScanFunc(sanitized)
+	// Fill input queue with tasks
+	go func(scanQueue chan<- func() result) {
+		// Read from stdin
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			target := scanner.Text()
+			// Filter input
+			sanitized := sanitizeInput(target)
+			// This queues the scan
+			scanQueue <- getScanFunc(sanitized)
+		}
+		err := scanner.Err()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, fmt.Sprintf("Error on input processing: %s", err.Error()))
+		}
+		close(scanQueue)
+	}(scanQueue)
+
+	// Close results queue after all workers are finished
+	go func(resultsQueue chan result) {
+		wg.Wait()
+		close(resultsQueue)
+	}(resultsQueue)
+
+	// Process results
+	for result := range resultsQueue {
+		processOutput(jsonOutput, result)
 	}
-	close(scanQueue)
-	wg.Wait()
 }
 
 func printDisclaimer() {

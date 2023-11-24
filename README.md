@@ -1,5 +1,11 @@
 # SANextract
 
+## Archived
+
+This project is archived as other awesome community tools that also support a wider range of functionality came up and we switched internal usage to alternatives like httpx.
+
+## About
+
 TLS certificates carry a field called "Subject Alternative Names" containing a list of names the certificate is valid for.
 These names are interesting, as they often reveal DNS names of IP addresses, contain subdomains not previously known, or allow to identify services (e.g. self-generated appliance certificates).
 
